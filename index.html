@@ -1,0 +1,1594 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>sweets_by_annanas — Заказ бенто-торта</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #C8956C;
+            --accent-light: #E8C9A8;
+            --accent-dark: #A67B52;
+            --bg: #FAF8F5;
+            --card: #FFFFFF;
+            --text: #1C1C1E;
+            --text-secondary: #8E8E93;
+            --border: #E5E5EA;
+            --success: #34C759;
+            --error: #FF3B30;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 16px;
+            line-height: 1.5;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            animation: fadeInDown 0.6s ease;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+        }
+
+        .header p {
+            font-size: 15px;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .progress-container {
+            margin-bottom: 32px;
+            animation: fadeIn 0.8s ease;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent-dark));
+            border-radius: 2px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 0%;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 10px;
+            font-weight: 500;
+        }
+
+        .step {
+            display: none;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        .step-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            letter-spacing: -0.3px;
+        }
+
+        .step-subtitle {
+            font-size: 15px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .option-card {
+            background: var(--card);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 20px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-card:hover {
+            border-color: var(--accent-light);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(200, 149, 108, 0.12);
+        }
+
+        .option-card.selected {
+            border-color: var(--accent);
+            background: linear-gradient(135deg, #FFF9F2 0%, #FFFFFF 100%);
+            box-shadow: 0 4px 16px rgba(200, 149, 108, 0.15);
+        }
+
+        .option-card.selected::after {
+            content: "✓";
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            width: 22px;
+            height: 22px;
+            background: var(--accent);
+            color: white;
+            border-radius: 50%;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .option-card .emoji {
+            font-size: 32px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .option-card .label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .input-group input[type="text"],
+        .input-group input[type="tel"],
+        .input-group textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: inherit;
+            background: var(--card);
+            transition: all 0.3s ease;
+            color: var(--text);
+        }
+
+        .input-group input:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(200, 149, 108, 0.1);
+        }
+
+        .input-group input.invalid {
+            border-color: var(--error);
+            box-shadow: 0 0 0 4px rgba(255, 59, 48, 0.1);
+        }
+
+        .input-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* Date Picker */
+        .date-picker-field {
+            position: relative;
+        }
+
+        .date-picker-field input {
+            width: 100%;
+            padding: 14px 16px;
+            padding-right: 44px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: inherit;
+            background: var(--card);
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .date-picker-field input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(200, 149, 108, 0.1);
+        }
+
+        .date-picker-field .calendar-icon {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            color: var(--text-secondary);
+            pointer-events: none;
+        }
+
+        .calendar-popup {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background: var(--card);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+            z-index: 100;
+            display: none;
+            animation: fadeInUp 0.25s ease;
+        }
+
+        .calendar-popup.open {
+            display: block;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .calendar-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 4px;
+        }
+
+        .calendar-nav button {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: var(--bg);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            color: var(--text);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .calendar-nav button:hover {
+            background: var(--accent-light);
+        }
+
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-bottom: 4px;
+        }
+
+        .calendar-weekdays span {
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            padding: 6px 0;
+        }
+
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+
+        .calendar-days button {
+            aspect-ratio: 1;
+            border: none;
+            background: transparent;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .calendar-days button:hover:not(:disabled):not(.selected):not(.today) {
+            background: var(--bg);
+        }
+
+        .calendar-days button.today {
+            color: var(--accent-dark);
+            font-weight: 700;
+            position: relative;
+        }
+
+        .calendar-days button.today::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+
+        .calendar-days button.selected {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(200, 149, 108, 0.4);
+        }
+
+        .calendar-days button:disabled {
+            color: var(--border);
+            cursor: not-allowed;
+        }
+
+        .calendar-days button.other-month {
+            color: var(--text-secondary);
+            opacity: 0.5;
+        }
+
+        /* Time Picker */
+        .time-section {
+            margin-bottom: 16px;
+        }
+
+        .time-section-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .time-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+        }
+
+        .time-grid.minutes-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .time-btn {
+            padding: 12px 4px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: var(--card);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            text-align: center;
+        }
+
+        .time-btn:hover {
+            border-color: var(--accent-light);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(200, 149, 108, 0.1);
+        }
+
+        .time-btn.selected {
+            border-color: var(--accent);
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(200, 149, 108, 0.3);
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 12px;
+            padding: 12px;
+            background: var(--card);
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-wrapper:hover {
+            border-color: var(--accent-light);
+        }
+
+        .checkbox-wrapper.checked {
+            border-color: var(--accent);
+            background: linear-gradient(135deg, #FFF9F2 0%, #FFFFFF 100%);
+        }
+
+        .checkbox-wrapper input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--accent);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .checkbox-wrapper label {
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            user-select: none;
+            flex: 1;
+        }
+
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: 16px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--card);
+            margin-bottom: 16px;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--accent);
+            background: linear-gradient(135deg, #FFF9F2 0%, #FFFFFF 100%);
+        }
+
+        .upload-zone.has-image {
+            border-style: solid;
+            border-color: var(--accent);
+            padding: 16px;
+        }
+
+        .upload-zone .upload-icon {
+            font-size: 40px;
+            margin-bottom: 8px;
+        }
+
+        .upload-zone p {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .upload-zone input {
+            display: none;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 280px;
+            border-radius: 12px;
+            object-fit: cover;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .remove-image {
+            margin-top: 10px;
+            font-size: 13px;
+            color: var(--error);
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: inherit;
+            font-weight: 500;
+        }
+
+        .delivery-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .delivery-card {
+            background: var(--card);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 18px 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .delivery-card:hover {
+            border-color: var(--accent-light);
+        }
+
+        .delivery-card.selected {
+            border-color: var(--accent);
+            background: linear-gradient(135deg, #FFF9F2 0%, #FFFFFF 100%);
+        }
+
+        .delivery-card .icon {
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+
+        .delivery-card .info h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .delivery-card .info p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .map-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+            padding: 8px 14px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--accent-dark);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .map-btn:hover {
+            background: var(--accent-light);
+            border-color: var(--accent);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 16px 24px;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 16px rgba(200, 149, 108, 0.3);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(200, 149, 108, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: var(--card);
+            color: var(--text);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--text-secondary);
+            background: var(--bg);
+        }
+
+        .summary-card {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 24px;
+            border: 2px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-item .key {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .summary-item .value {
+            font-weight: 600;
+            text-align: right;
+            max-width: 60%;
+        }
+
+        .copy-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 17px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(200, 149, 108, 0.35);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(200, 149, 108, 0.45);
+        }
+
+        .copy-btn.copied {
+            background: linear-gradient(135deg, var(--success) 0%, #2DB14E 100%);
+            box-shadow: 0 4px 20px rgba(52, 199, 89, 0.35);
+        }
+
+        .copy-hint {
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 12px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 400px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+            .time-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            .time-grid.minutes-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>sweets_by_annanas</h1>
+            <p>Закажите свой идеальный бенто-торт</p>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">Шаг 1 из 9</div>
+        </div>
+
+        <!-- Step 1: Бисквит -->
+        <div class="step active" data-step="1">
+            <h2 class="step-title">Бисквит</h2>
+            <p class="step-subtitle">Выберите основу</p>
+            <div class="options-grid" id="biscuitOptions">
+                <div class="option-card" data-value="Ванильный">
+                    <span class="emoji">🍦</span>
+                    <span class="label">Ванильный</span>
+                </div>
+                <div class="option-card" data-value="Шоколадный">
+                    <span class="emoji">🍫</span>
+                    <span class="label">Шоколадный</span>
+                </div>
+                <div class="option-card" data-value="Красный бархат">
+                    <span class="emoji">🌹</span>
+                    <span class="label">Красный бархат</span>
+                </div>
+                <div class="option-card" data-value="Морковный">
+                    <span class="emoji">🥕</span>
+                    <span class="label">Морковный</span>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" id="btn1" disabled>Далее</button>
+            </div>
+        </div>
+
+        <!-- Step 2: Начинка -->
+        <div class="step" data-step="2">
+            <h2 class="step-title">Начинка</h2>
+            <p class="step-subtitle">Выберите начинку</p>
+            <div class="options-grid" id="fillingOptions">
+                <div class="option-card" data-value="Черника">
+                    <span class="emoji">🫐</span>
+                    <span class="label">Черника</span>
+                </div>
+                <div class="option-card" data-value="Вишня">
+                    <span class="emoji">🍒</span>
+                    <span class="label">Вишня</span>
+                </div>
+                <div class="option-card" data-value="Клубника">
+                    <span class="emoji">🍓</span>
+                    <span class="label">Клубника</span>
+                </div>
+                <div class="option-card" data-value="Карамель">
+                    <span class="emoji">🍮</span>
+                    <span class="label">Карамель</span>
+                </div>
+                <div class="option-card" data-value="Карамель + банан">
+                    <span class="emoji">🍌</span>
+                    <span class="label">Карамель + банан</span>
+                </div>
+                <div class="option-card" data-value="Карамель + арахис">
+                    <span class="emoji">🥜</span>
+                    <span class="label">Карамель + арахис</span>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="prevStep()">Назад</button>
+                <button class="btn btn-primary" id="btn2" disabled>Далее</button>
+            </div>
+        </div>
+
+        <!-- Step 3: Дизайн -->
+        <div class="step" data-step="3">
+            <h2 class="step-title">Дизайн</h2>
+            <p class="step-subtitle">Опишите дизайн</p>
+            <div class="upload-zone" id="uploadZone">
+                <span class="upload-icon">📎</span>
+                <p>Нажмите или перетащите сюда референс</p>
+                <p style="font-size: 12px; margin-top: 4px;">JPG, PNG до 5 МБ</p>
+                <input type="file" id="imageInput" accept="image/*">
+            </div>
+            <div class="input-group">
+                <label>Описание или дополнение к референсу</label>
+                <textarea id="designComment" placeholder="Например: такой стиль, но цвет надписи черный, а текст &quot;С Днем Рождения!&quot;..."></textarea>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="prevStep()">Назад</button>
+                <button class="btn btn-primary" id="btn3">Далее</button>
+            </div>
+        </div>
+
+        <!-- Step 4: Аллергены -->
+        <div class="step" data-step="4">
+            <h2 class="step-title">Особенности</h2>
+            <p class="step-subtitle">Укажите аллергены</p>
+            <div class="input-group">
+                <label>Аллергены</label>
+                <input type="text" id="allergensInput" placeholder="Например: орехи, лактоза, глютен...">
+            </div>
+            <div class="checkbox-wrapper" id="noAllergensWrapper">
+                <input type="checkbox" id="noAllergens">
+                <label for="noAllergens">Нет аллергии</label>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="prevStep()">Назад</button>
+                <button class="btn btn-primary" id="btn4" disabled>Далее</button>
+            </div>
+        </div>
+
+        <!-- Step 5: Дата и время -->
+        <div class="step" data-step="5">
+            <h2 class="step-title">Когда заберёте?</h2>
+            <p class="step-subtitle">Выберите дату и время</p>
+            <div class="input-group">
+                <label>Дата</label>
+                <div class="date-picker-field" id="datePickerField">
+                    <input type="text" id="orderDateDisplay" placeholder="Выберите дату" readonly>
+                    <span class="calendar-icon">📅</span>
+                    <div class="calendar-popup" id="calendarPopup">
+                        <div class="calendar-header">
+                            <h3 id="calendarMonthYear"></h3>
+                            <div class="calendar-nav">
+                                <button onclick="changeMonth(-1)">‹</button>
+                                <button onclick="changeMonth(1)">›</button>
+                            </div>
+                        </div>
+                        <div class="calendar-weekdays">
+                            <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>
+                        </div>
+                        <div class="calendar-days" id="calendarDays"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Время</label>
+                <div class="time-section">
+                    <div class="time-section-label">Часы</div>
+                    <div class="time-grid" id="hoursGrid"></div>
+                </div>
+                <div class="time-section">
+                    <div class="time-section-label">Минуты</div>
+                    <div class="time-grid minutes-grid" id="minutesGrid"></div>
+                </div>
+            </div>
+            <div class="checkbox-wrapper" id="timeLaterWrapper">
+                <input type="checkbox" id="timeLater">
+                <label for="timeLater">Согласовать время позже</label>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="prevStep()">Назад</button>
+                <button class="btn btn-primary" id="btn5" disabled>Далее</button>
+            </div>
+        </div>
+
+        <!-- Step 6: Получение -->
+        <div class="step" data-step="6">
+            <h2 class="step-title">Получение</h2>
+            <p class="step-subtitle">Способ получения</p>
+            <div class="delivery-options" id="deliveryOptions">
+                <div class="delivery-card" data-value="Самовывоз">
+                    <span class="icon">🏠</span>
+                    <div class="info">
+                        <h4>Самовывоз</h4>
+                        <p>Брест, бульвар Космонавтов 40, 1 подъезд</p>
+                        <a href="https://yandex.by/maps/?text=%D0%91%D1%80%D0%B5%D1%81%D1%82%2C%20%D0%B1%D1%83%D0%BB%D1%8C%D0%B2%D0%B0%D1%80%20%D0%9A%D0%BE%D1%81%D0%BC%D0%BE%D0%BD%D0%B0%D0%B2%D1%82%D0%BE%D0%B2%2040" target="_blank" class="map-btn" onclick="event.stopPropagation(); event.preventDefault(); window.open(this.href, '_blank');">🗺 Показать на Яндекс Картах</a>
+                    </div>
+                </div>
+                <div class="delivery-card" data-value="Доставка Яндекс Доставкой">
+                    <span class="icon">🚕</span>
+                    <div class="info">
+                        <h4>Доставка Яндекс Доставкой</h4>
+                        <p>Оплачивается клиентом самостоятельно</p>
+                    </div>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="prevStep()">Назад</button>
+                <button class="btn btn-primary" id="btn6" disabled>Далее</button>
+            </div>
+        </div>
+
+        <!-- Step 7: Телефон -->
+        <div class="step" data-step="7">
+            <h2 class="step-title">Контакт</h2>
+            <p class="step-subtitle">Ваш номер телефона</p>
+            <div class="input-group">
+                <label>Телефон <span style="font-weight:400;color:var(--text-secondary)">(необязательно)</span></label>
+                <input type="tel" id="phoneInput" placeholder="+375 (__) ___-__-__" maxlength="19">
+                <p id="phoneError" style="font-size: 13px; color: var(--error); margin-top: 6px; display: none;">Введите корректный номер в формате +375 (XX) XXX-XX-XX</p>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="prevStep()">Назад</button>
+                <button class="btn btn-primary" id="btn7">Далее</button>
+            </div>
+        </div>
+
+        <!-- Step 8: Комментарий -->
+        <div class="step" data-step="8">
+            <h2 class="step-title">Дополнительно</h2>
+            <p class="step-subtitle">Ваши пожелания</p>
+            <div class="input-group">
+                <label>Комментарий <span style="font-weight:400;color:var(--text-secondary)">(необязательно)</span></label>
+                <textarea id="extraComment" placeholder="Любые дополнительные пожелания..."></textarea>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="prevStep()">Назад</button>
+                <button class="btn btn-primary" id="btn8">Далее</button>
+            </div>
+        </div>
+
+        <!-- Step 9: Итог -->
+        <div class="step" data-step="9">
+            <h2 class="step-title">Ваш заказ</h2>
+            <p class="step-subtitle">Проверьте всё и скопируйте</p>
+            <div class="summary-card" id="summaryCard"></div>
+            <button class="copy-btn" id="copyBtn" onclick="copyOrder()">
+                <span>📋</span> Скопировать заказ
+            </button>
+            <p class="copy-hint">Вставьте текст в сообщение, а фото референса отправьте отдельно</p>
+            <div class="btn-group" style="margin-top: 20px;">
+                <button class="btn btn-secondary" onclick="prevStep()">Назад</button>
+                <button class="btn btn-secondary" onclick="resetOrder()">Новый заказ</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalSteps = 9;
+        const orderData = {};
+        let uploadedImage = null;
+
+        // Calendar state
+        let calendarDate = new Date();
+        let selectedCalendarDate = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            renderTimePickers();
+            updateProgress();
+            validateCurrentStep();
+        });
+
+        function setupEventListeners() {
+            // Biscuit options
+            document.querySelectorAll('#biscuitOptions .option-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    document.querySelectorAll('#biscuitOptions .option-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    orderData.biscuit = card.dataset.value;
+                    validateCurrentStep();
+                });
+            });
+
+            // Filling options
+            document.querySelectorAll('#fillingOptions .option-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    document.querySelectorAll('#fillingOptions .option-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    orderData.filling = card.dataset.value;
+                    validateCurrentStep();
+                });
+            });
+
+            // Image upload
+            const uploadZone = document.getElementById('uploadZone');
+            const imageInput = document.getElementById('imageInput');
+            if (uploadZone && imageInput) {
+                uploadZone.addEventListener('click', () => imageInput.click());
+                uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.style.borderColor = 'var(--accent)'; });
+                uploadZone.addEventListener('dragleave', () => { uploadZone.style.borderColor = ''; });
+                uploadZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadZone.style.borderColor = '';
+                    if (e.dataTransfer.files.length) handleImage(e.dataTransfer.files[0]);
+                });
+                imageInput.addEventListener('change', (e) => {
+                    if (e.target.files.length) handleImage(e.target.files[0]);
+                });
+            }
+
+            // Design comment
+            const designComment = document.getElementById('designComment');
+            if (designComment) {
+                designComment.addEventListener('input', (e) => {
+                    orderData.designComment = e.target.value;
+                });
+            }
+
+            // Allergens input
+            const allergensInput = document.getElementById('allergensInput');
+            if (allergensInput) {
+                allergensInput.addEventListener('input', (e) => {
+                    orderData.allergens = e.target.value;
+                    if (e.target.value.trim()) {
+                        const cb = document.getElementById('noAllergens');
+                        const wrapper = document.getElementById('noAllergensWrapper');
+                        if (cb) cb.checked = false;
+                        if (wrapper) wrapper.classList.remove('checked');
+                        orderData.noAllergens = false;
+                    }
+                    validateCurrentStep();
+                });
+            }
+
+            // No allergens checkbox wrapper click
+            const noAllergensWrapper = document.getElementById('noAllergensWrapper');
+            if (noAllergensWrapper) {
+                noAllergensWrapper.addEventListener('click', function(e) {
+                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'LABEL') return;
+                    const cb = document.getElementById('noAllergens');
+                    if (!cb) return;
+                    cb.checked = !cb.checked;
+                    this.classList.toggle('checked', cb.checked);
+                    if (cb.checked) {
+                        const input = document.getElementById('allergensInput');
+                        if (input) input.value = '';
+                        orderData.allergens = '';
+                    }
+                    orderData.noAllergens = cb.checked;
+                    validateCurrentStep();
+                });
+            }
+            // No allergens checkbox change (when clicked directly)
+            const noAllergensCb = document.getElementById('noAllergens');
+            if (noAllergensCb) {
+                noAllergensCb.addEventListener('change', function(e) {
+                    const wrapper = document.getElementById('noAllergensWrapper');
+                    if (wrapper) wrapper.classList.toggle('checked', this.checked);
+                    if (this.checked) {
+                        const input = document.getElementById('allergensInput');
+                        if (input) input.value = '';
+                        orderData.allergens = '';
+                    }
+                    orderData.noAllergens = this.checked;
+                    validateCurrentStep();
+                });
+            }
+
+            // Date picker
+            const dateField = document.getElementById('datePickerField');
+            const dateDisplay = document.getElementById('orderDateDisplay');
+            const popup = document.getElementById('calendarPopup');
+
+            if (dateField && dateDisplay && popup) {
+                dateDisplay.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    popup.classList.toggle('open');
+                    renderCalendar();
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!dateField.contains(e.target)) {
+                        popup.classList.remove('open');
+                    }
+                });
+            }
+
+            // Time later checkbox wrapper click
+            const timeLaterWrapper = document.getElementById('timeLaterWrapper');
+            if (timeLaterWrapper) {
+                timeLaterWrapper.addEventListener('click', function(e) {
+                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'LABEL') return;
+                    const cb = document.getElementById('timeLater');
+                    if (!cb) return;
+                    cb.checked = !cb.checked;
+                    this.classList.toggle('checked', cb.checked);
+                    if (cb.checked) {
+                        clearTimeSelection();
+                    }
+                    orderData.timeLater = cb.checked;
+                    validateCurrentStep();
+                });
+            }
+            // Time later checkbox change (when clicked directly)
+            const timeLaterCb = document.getElementById('timeLater');
+            if (timeLaterCb) {
+                timeLaterCb.addEventListener('change', function(e) {
+                    const wrapper = document.getElementById('timeLaterWrapper');
+                    if (wrapper) wrapper.classList.toggle('checked', this.checked);
+                    if (this.checked) {
+                        clearTimeSelection();
+                    }
+                    orderData.timeLater = this.checked;
+                    validateCurrentStep();
+                });
+            }
+
+            // Phone mask & validation
+            const phoneInput = document.getElementById('phoneInput');
+            if (phoneInput) {
+                phoneInput.addEventListener('focus', function() {
+                    if (!this.value) {
+                        this.value = '+375 (';
+                    }
+                });
+                phoneInput.addEventListener('blur', function() {
+                    if (this.value === '+375 (') {
+                        this.value = '';
+                    }
+                    validatePhone();
+                });
+                phoneInput.addEventListener('input', function(e) {
+                    formatPhone(this);
+                    validatePhone();
+                    orderData.phone = this.value;
+                });
+                phoneInput.addEventListener('keydown', function(e) {
+                    if ((e.key === 'Backspace' || e.key === 'Delete') && this.selectionStart <= 6) {
+                        e.preventDefault();
+                    }
+                });
+            }
+
+            // Extra comment
+            const extraComment = document.getElementById('extraComment');
+            if (extraComment) {
+                extraComment.addEventListener('input', (e) => {
+                    orderData.extraComment = e.target.value;
+                });
+            }
+
+            // Delivery options
+            document.querySelectorAll('.delivery-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    if (e.target.closest('.map-btn')) return;
+                    document.querySelectorAll('.delivery-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    orderData.delivery = card.dataset.value;
+                    validateCurrentStep();
+                });
+            });
+
+            // Buttons
+            for (let i = 1; i <= 8; i++) {
+                const btn = document.getElementById('btn' + i);
+                if (btn) btn.addEventListener('click', () => nextStep());
+            }
+        }
+
+        function renderTimePickers() {
+            const hoursGrid = document.getElementById('hoursGrid');
+            const minutesGrid = document.getElementById('minutesGrid');
+
+            if (hoursGrid) {
+                hoursGrid.innerHTML = '';
+                for (let h = 10; h <= 22; h++) {
+                    const btn = document.createElement('button');
+                    btn.className = 'time-btn';
+                    btn.textContent = String(h).padStart(2, '0');
+                    btn.dataset.hour = String(h).padStart(2, '0');
+                    btn.addEventListener('click', () => {
+                        hoursGrid.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        orderData.hour = btn.dataset.hour;
+                        updateTimeFromPickers();
+                    });
+                    hoursGrid.appendChild(btn);
+                }
+            }
+
+            if (minutesGrid) {
+                minutesGrid.innerHTML = '';
+                ['00', '10', '20', '30', '40', '50'].forEach(m => {
+                    const btn = document.createElement('button');
+                    btn.className = 'time-btn';
+                    btn.textContent = m;
+                    btn.dataset.minute = m;
+                    btn.addEventListener('click', () => {
+                        minutesGrid.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        orderData.minute = btn.dataset.minute;
+                        updateTimeFromPickers();
+                    });
+                    minutesGrid.appendChild(btn);
+                });
+            }
+        }
+
+        function updateTimeFromPickers() {
+            // Uncheck "time later" whenever any time part is selected
+            const timeLaterCb = document.getElementById('timeLater');
+            const timeLaterWrapper = document.getElementById('timeLaterWrapper');
+            if (timeLaterCb) {
+                timeLaterCb.checked = false;
+                orderData.timeLater = false;
+            }
+            if (timeLaterWrapper) {
+                timeLaterWrapper.classList.remove('checked');
+            }
+
+            // Build time string if both selected
+            if (orderData.hour && orderData.minute) {
+                orderData.time = orderData.hour + ':' + orderData.minute;
+            } else if (orderData.hour || orderData.minute) {
+                // Partial selection: store what we have, but don't build full time yet
+                orderData.time = '';
+            }
+            validateCurrentStep();
+        }
+
+        function clearTimeSelection() {
+            orderData.hour = '';
+            orderData.minute = '';
+            orderData.time = '';
+            const hoursGrid = document.getElementById('hoursGrid');
+            const minutesGrid = document.getElementById('minutesGrid');
+            if (hoursGrid) hoursGrid.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
+            if (minutesGrid) minutesGrid.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
+        }
+
+        // Calendar functions
+        function renderCalendar() {
+            const monthYear = document.getElementById('calendarMonthYear');
+            const daysContainer = document.getElementById('calendarDays');
+            if (!monthYear || !daysContainer) return;
+
+            const year = calendarDate.getFullYear();
+            const month = calendarDate.getMonth();
+            const monthNames = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+            monthYear.textContent = monthNames[month] + ' ' + year;
+
+            daysContainer.innerHTML = '';
+
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startDayOfWeek = (firstDay.getDay() + 6) % 7;
+            const daysInMonth = lastDay.getDate();
+
+            const today = new Date();
+            today.setHours(0,0,0,0);
+
+            // Previous month days
+            const prevMonthLastDay = new Date(year, month, 0).getDate();
+            for (let i = startDayOfWeek - 1; i >= 0; i--) {
+                const dayNum = prevMonthLastDay - i;
+                const btn = document.createElement('button');
+                btn.textContent = dayNum;
+                btn.className = 'other-month';
+                const dateObj = new Date(year, month - 1, dayNum);
+                if (dateObj < today) {
+                    btn.disabled = true;
+                } else {
+                    btn.addEventListener('click', () => {
+                        calendarDate = new Date(year, month - 1, 1);
+                        selectDate(dateObj);
+                    });
+                }
+                daysContainer.appendChild(btn);
+            }
+
+            // Current month days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const btn = document.createElement('button');
+                btn.textContent = day;
+                const dateObj = new Date(year, month, day);
+
+                if (dateObj.getTime() === today.getTime()) {
+                    btn.classList.add('today');
+                }
+                if (selectedCalendarDate && dateObj.getTime() === selectedCalendarDate.getTime()) {
+                    btn.classList.add('selected');
+                }
+                if (dateObj < today) {
+                    btn.disabled = true;
+                } else {
+                    btn.addEventListener('click', () => selectDate(dateObj));
+                }
+
+                daysContainer.appendChild(btn);
+            }
+
+            // Next month days
+            const totalCells = startDayOfWeek + daysInMonth;
+            const remaining = 42 - totalCells;
+            for (let i = 1; i <= remaining; i++) {
+                const btn = document.createElement('button');
+                btn.textContent = i;
+                btn.className = 'other-month';
+                const dateObj = new Date(year, month + 1, i);
+                if (dateObj < today) {
+                    btn.disabled = true;
+                } else {
+                    btn.addEventListener('click', () => {
+                        calendarDate = new Date(year, month + 1, 1);
+                        selectDate(dateObj);
+                    });
+                }
+                daysContainer.appendChild(btn);
+            }
+        }
+
+        function selectDate(dateObj) {
+            selectedCalendarDate = dateObj;
+            orderData.date = formatDateISO(dateObj);
+            const display = document.getElementById('orderDateDisplay');
+            if (display) display.value = formatDateDisplay(dateObj);
+            document.getElementById('calendarPopup').classList.remove('open');
+            validateCurrentStep();
+            renderCalendar();
+        }
+
+        function changeMonth(offset) {
+            calendarDate.setMonth(calendarDate.getMonth() + offset);
+            renderCalendar();
+        }
+
+        function formatDateISO(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return y + '-' + m + '-' + d;
+        }
+
+        function formatDateDisplay(date) {
+            const d = String(date.getDate()).padStart(2, '0');
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const y = date.getFullYear();
+            return d + '.' + m + '.' + y;
+        }
+
+        function formatPhone(input) {
+            let val = input.value.replace(/\D/g, '');
+
+            if (val.length === 0) {
+                input.value = '';
+                return;
+            }
+
+            if (!val.startsWith('375')) {
+                val = '375' + val;
+            }
+
+            val = val.substring(0, 12);
+
+            let formatted = '+375';
+            if (val.length > 3) {
+                formatted += ' (' + val.substring(3, 5);
+            }
+            if (val.length > 5) {
+                formatted += ') ' + val.substring(5, 8);
+            }
+            if (val.length > 8) {
+                formatted += '-' + val.substring(8, 10);
+            }
+            if (val.length > 10) {
+                formatted += '-' + val.substring(10, 12);
+            }
+
+            input.value = formatted;
+        }
+
+        function validatePhone() {
+            const input = document.getElementById('phoneInput');
+            const error = document.getElementById('phoneError');
+            if (!input || !error) return true;
+            const val = input.value.trim();
+
+            if (!val) {
+                input.classList.remove('invalid');
+                error.style.display = 'none';
+                return true;
+            }
+
+            const phoneRegex = /^\+375 \([0-9]{2}\) [0-9]{3}-[0-9]{2}-[0-9]{2}$/;
+            const isValid = phoneRegex.test(val);
+
+            if (!isValid) {
+                input.classList.add('invalid');
+                error.style.display = 'block';
+            } else {
+                input.classList.remove('invalid');
+                error.style.display = 'none';
+            }
+
+            return isValid;
+        }
+
+        function handleImage(file) {
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Файл слишком большой. Максимум 5 МБ.');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                uploadedImage = e.target.result;
+                orderData.hasImage = true;
+                const uploadZone = document.getElementById('uploadZone');
+                if (uploadZone) {
+                    uploadZone.innerHTML = '<img src="' + uploadedImage + '" class="image-preview" alt="Референс"><button class="remove-image" onclick="event.stopPropagation(); removeImage()">Удалить фото</button>';
+                    uploadZone.classList.add('has-image');
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeImage() {
+            uploadedImage = null;
+            orderData.hasImage = false;
+            const uploadZone = document.getElementById('uploadZone');
+            if (uploadZone) {
+                uploadZone.classList.remove('has-image');
+                uploadZone.innerHTML = '<span class="upload-icon">📎</span><p>Нажмите или перетащите сюда референс</p><p style="font-size: 12px; margin-top: 4px;">JPG, PNG до 5 МБ</p><input type="file" id="imageInput" accept="image/*">';
+                const newInput = document.getElementById('imageInput');
+                if (newInput) {
+                    newInput.addEventListener('change', (e) => {
+                        if (e.target.files.length) handleImage(e.target.files[0]);
+                    });
+                }
+            }
+        }
+
+        function validateCurrentStep() {
+            let valid = false;
+            switch(currentStep) {
+                case 1: valid = !!orderData.biscuit; break;
+                case 2: valid = !!orderData.filling; break;
+                case 3: valid = true; break;
+                case 4: valid = !!(orderData.allergens && orderData.allergens.trim()) || !!orderData.noAllergens; break;
+                case 5: valid = !!orderData.date && (!!orderData.time || !!orderData.timeLater); break;
+                case 6: valid = !!orderData.delivery; break;
+                case 7: valid = true; break;
+                case 8: valid = true; break;
+                case 9: valid = true; break;
+            }
+            const btn = document.getElementById('btn' + currentStep);
+            if (btn) btn.disabled = !valid;
+        }
+
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                const current = document.querySelector('.step[data-step="' + currentStep + '"]');
+                if (current) current.classList.remove('active');
+                currentStep++;
+                const next = document.querySelector('.step[data-step="' + currentStep + '"]');
+                if (next) next.classList.add('active');
+                updateProgress();
+                validateCurrentStep();
+                if (currentStep === 9) renderSummary();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                const current = document.querySelector('.step[data-step="' + currentStep + '"]');
+                if (current) current.classList.remove('active');
+                currentStep--;
+                const prev = document.querySelector('.step[data-step="' + currentStep + '"]');
+                if (prev) prev.classList.add('active');
+                updateProgress();
+                validateCurrentStep();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function updateProgress() {
+            const percent = (currentStep / totalSteps) * 100;
+            const fill = document.getElementById('progressFill');
+            const text = document.getElementById('progressText');
+            if (fill) fill.style.width = percent + '%';
+            if (text) text.textContent = 'Шаг ' + currentStep + ' из ' + totalSteps;
+        }
+
+        function renderSummary() {
+            const summaryCard = document.getElementById('summaryCard');
+            if (!summaryCard) return;
+            const timeStr = orderData.timeLater ? 'согласовать позже' : (orderData.time || '—');
+            const phoneStr = orderData.phone || '—';
+            const extraStr = orderData.extraComment || '—';
+            const designStr = orderData.designComment || '—';
+            const allergensStr = orderData.noAllergens ? 'нет' : (orderData.allergens || '—');
+            const deliveryStr = orderData.delivery === 'Самовывоз' 
+                ? 'Самовывоз (Брест, бульвар Космонавтов 40, 1 подъезд)' 
+                : 'Доставка Яндекс Доставкой';
+
+            summaryCard.innerHTML = 
+                '<div class="summary-item"><span class="key">Бисквит</span><span class="value">' + (orderData.biscuit || '—') + '</span></div>' +
+                '<div class="summary-item"><span class="key">Начинка</span><span class="value">' + (orderData.filling || '—') + '</span></div>' +
+                '<div class="summary-item"><span class="key">Описание дизайна</span><span class="value">' + designStr + '</span></div>' +
+                '<div class="summary-item"><span class="key">Аллергены</span><span class="value">' + allergensStr + '</span></div>' +
+                '<div class="summary-item"><span class="key">Дата</span><span class="value">' + (orderData.date ? formatDateDisplay(new Date(orderData.date + 'T00:00:00')) : '—') + '</span></div>' +
+                '<div class="summary-item"><span class="key">Время</span><span class="value">' + timeStr + '</span></div>' +
+                '<div class="summary-item"><span class="key">Получение</span><span class="value">' + deliveryStr + '</span></div>' +
+                '<div class="summary-item"><span class="key">Телефон</span><span class="value">' + phoneStr + '</span></div>' +
+                '<div class="summary-item"><span class="key">Комментарий</span><span class="value">' + extraStr + '</span></div>';
+        }
+
+        function copyOrder() {
+            const timeStr = orderData.timeLater ? 'согласовать позже' : (orderData.time || '—');
+            const phoneStr = orderData.phone || '—';
+            const extraStr = orderData.extraComment || '—';
+            const designStr = orderData.designComment || '—';
+            const allergensStr = orderData.noAllergens ? 'нет' : (orderData.allergens || '—');
+            const deliveryStr = orderData.delivery === 'Самовывоз' 
+                ? 'Самовывоз (Брест, бульвар Космонавтов 40, 1 подъезд)' 
+                : 'Доставка Яндекс Доставкой';
+
+            const text = 'Бисквит: ' + (orderData.biscuit || '—') + '\n' +
+                'Начинка: ' + (orderData.filling || '—') + '\n' +
+                'Описание дизайна: ' + designStr + '\n' +
+                'Аллергены: ' + allergensStr + '\n' +
+                'Дата: ' + (orderData.date ? formatDateDisplay(new Date(orderData.date + 'T00:00:00')) : '—') + '\n' +
+                'Время: ' + timeStr + '\n' +
+                'Получение: ' + deliveryStr + '\n' +
+                'Телефон: ' + phoneStr + '\n' +
+                'Комментарий: ' + extraStr;
+
+            const onSuccess = () => {
+                const btn = document.getElementById('copyBtn');
+                if (btn) {
+                    btn.innerHTML = '<span>✓</span> Скопировано!';
+                    btn.classList.add('copied');
+                    setTimeout(() => {
+                        btn.innerHTML = '<span>📋</span> Скопировать заказ';
+                        btn.classList.remove('copied');
+                    }, 2500);
+                }
+            };
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(onSuccess).catch(() => fallbackCopy(text, onSuccess));
+            } else {
+                fallbackCopy(text, onSuccess);
+            }
+        }
+
+        function fallbackCopy(text, callback) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                callback();
+            } catch (e) {
+                console.error('Copy failed', e);
+                alert('Не удалось скопировать автоматически. Пожалуйста, скопируйте текст вручную.');
+            }
+            document.body.removeChild(textarea);
+        }
+
+        function resetOrder() {
+            if (!confirm('Начать новый заказ? Все текущие данные будут сброшены.')) return;
+            location.reload();
+        }
+    </script>
+</body>
+</html>
